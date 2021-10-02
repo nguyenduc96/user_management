@@ -12,19 +12,23 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
+import static dao.UserDAO.*;
+
 @WebServlet(name = "UserServlet", value = "/users")
 public class UserServlet extends HttpServlet {
     public static final String CREATE = "create";
     public static final String ACTION = "action";
     public static final String EDIT = "edit";
     public static final String DELETE = "delete";
+    public static final String EMPTY = "";
+    public static final String DISABLED = "disabled";
     UserService userService = new UserService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter(ACTION);
         if (action == null) {
-            action = "";
+            action = EMPTY;
         }
         switch (action) {
             case CREATE: {
@@ -39,11 +43,54 @@ public class UserServlet extends HttpServlet {
                 deleteUserInfo(request, response);
                 break;
             }
-            default: {
-                showListUser(request, response);
+            case "page": {
+                showPage(request, response);
                 break;
             }
+            default: {
+//                showListUser(request, response);
+                showPage(request, response);
+                break;
+
+            }
         }
+    }
+
+    private void showPage(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        final int LIMIT = 6;
+        int totalItem = userService.countRecord();
+        int totalPage;
+        if (totalItem % LIMIT == 0) {
+            totalPage = totalItem / LIMIT;
+        } else {
+            totalPage = totalItem / LIMIT + 1;
+        }
+        String previous = EMPTY;
+        String next = EMPTY;
+        request.setAttribute("totalPage", totalPage);
+        String page = request.getParameter("page");
+
+        if (page == null) {
+            page = "1";
+        }
+        int pageOut = Integer.parseInt(page);
+
+        if (pageOut == 1) {
+            previous = DISABLED;
+        } else if (pageOut == totalPage) {
+            next = DISABLED;
+        }
+
+        int offset = (pageOut - 1) * LIMIT;
+        List<User> users = userService.findUserByOffset(offset, LIMIT);
+        request.setAttribute("users", users);
+        String active = "active";
+        request.setAttribute("active", active);
+        request.setAttribute("pageOut", pageOut);
+        request.setAttribute("previous", previous);
+        request.setAttribute("next", next);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("user/list.jsp");
+        dispatcher.forward(request, response);
     }
 
     private void showEditInfoUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -72,9 +119,9 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String action = request.getParameter("action");
+        String action = request.getParameter(ACTION);
         if (action == null) {
-            action = "";
+            action = EMPTY;
         }
         switch (action) {
             case CREATE: {
@@ -100,7 +147,8 @@ public class UserServlet extends HttpServlet {
                 break;
             }
             default: {
-                showListUser(request, response);
+//                showListUser(request, response);
+                showPage(request, response);
                 break;
             }
         }
@@ -117,14 +165,14 @@ public class UserServlet extends HttpServlet {
     }
 
     private void editUserInfo(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ServletException {
-        int id = Integer.parseInt(request.getParameter("id"));
+        int id = Integer.parseInt(request.getParameter(ID));
 
-        String name = request.getParameter("name");
-        String address = request.getParameter("address");
-        String email = request.getParameter("email");
+        String name = request.getParameter(NAME);
+        String address = request.getParameter(ADDRESS);
+        String email = request.getParameter(EMAIL);
 
         boolean isUpdate;
-        if (name.equals("") || address.equals("") || email.equals("")) {
+        if (name.equals(EMPTY) || address.equals(EMPTY) || email.equals(EMPTY)) {
             isUpdate = false;
         } else {
             isUpdate = userService.update(new User(id, name, address, email));
@@ -139,12 +187,12 @@ public class UserServlet extends HttpServlet {
     }
 
     private void createUserInfo(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
-        String name = request.getParameter("name");
-        String address = request.getParameter("address");
-        String email = request.getParameter("email");
+        String name = request.getParameter(NAME);
+        String address = request.getParameter(ADDRESS);
+        String email = request.getParameter(EMAIL);
 
         boolean isSave;
-        if (name.equals("") || address.equals("") || email.equals("")) {
+        if (name.equals(EMPTY) || address.equals(EMPTY) || email.equals(EMPTY)) {
             isSave = false;
         } else {
             isSave = userService.save(new User(name, address, email));

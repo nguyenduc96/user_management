@@ -51,6 +51,36 @@
         </c:forEach>
         </tbody>
     </table>
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            <li class="page-item ${previous}">
+                <a class="page-link" href="users?action=page&page=${1}">First</a>
+            </li>
+            <li class="page-item ${previous}">
+                <a class="page-link" href="users?action=page&page=${pageOut - 1}">Previous</a>
+            </li>
+            <c:forEach begin="1" end="${totalPage}" step="1" var="i">
+                <c:choose>
+                    <c:when test="${pageOut == 1}">
+                        <li class="page-item ${active}">
+                            <a class="page-link" href="users?action=page&page=${i}">${i}</a>
+                        </li>
+                    </c:when>
+                    <c:otherwise>
+                        <li class="page-item">
+                            <a class="page-link" href="users?action=page&page=${i}">${i}</a>
+                        </li>
+                    </c:otherwise>
+                </c:choose>
+            </c:forEach>
+            <li class="page-item ${next}">
+                <a class="page-link" href="users?action=page&page=${pageOut + 1}">Next</a>
+            </li>
+            <li class="page-item ${next}">
+                <a class="page-link" href="users?action=page&page=${totalPage}">Last</a>
+            </li>
+        </ul>
+    </nav>
 </div>
 <script>
     function confirmDelete(id) {

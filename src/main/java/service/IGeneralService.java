@@ -13,4 +13,8 @@ public interface IGeneralService<T> {
     boolean delete(int id) throws SQLException;
 
     T findById(int id);
+
+    int countRecord();
+
+    List<T> findUserByOffset(int offset, int limit);
 }

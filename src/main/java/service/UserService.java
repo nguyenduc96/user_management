@@ -33,4 +33,14 @@ public class UserService implements IUserService{
     public User findById(int id) {
         return userDAO.findById(id);
     }
+
+    @Override
+    public int countRecord() {
+        return userDAO.countRecord();
+    }
+
+    @Override
+    public List<User> findUserByOffset(int offset, int limit) {
+        return userDAO.findUserByOffset(offset, limit);
+    }
 }
